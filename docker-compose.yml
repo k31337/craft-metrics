@@ -1,0 +1,69 @@
+services:
+  mc:
+    image: itzg/minecraft-server:latest
+    container_name: craft-metrics-mc
+    restart: unless-stopped
+    environment:
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: ${MC_VERSION:-1.21.1}
+      FABRIC_LOADER_VERSION: "latest"
+      MAX_PLAYERS: "1"
+      MEMORY: ${MC_MEMORY:-2G}
+    ports:
+      - "${MC_PORT:-25565}:25565"
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: craft-metrics-influxdb
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_INIT_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_INIT_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_INIT_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_INIT_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_INIT_ADMIN_TOKEN}
+    ports:
+      - "127.0.0.1:${INFLUXDB_PORT:-8086}:8086"
+    volumes:
+      - ./influxdb-data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  grafana:
+    image: grafana/grafana-oss:11.2.0
+    container_name: craft-metrics-grafana
+    restart: unless-stopped
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      INFLUXDB_INIT_ORG: ${INFLUXDB_INIT_ORG}
+      INFLUXDB_INIT_BUCKET: ${INFLUXDB_INIT_BUCKET}
+      INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_INIT_ADMIN_TOKEN}
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
