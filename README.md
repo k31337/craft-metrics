@@ -196,19 +196,20 @@ docker compose down
 
 The exporter writes InfluxDB line protocol to the configured bucket, tagged so Grafana can group and filter it:
 
-- **Summary** (`mc_stats_summary`) — lifetime totals per player: blocks mined, mobs killed, playtime hours, deaths, jumps, damage dealt/taken, and movement distance by type (walk, sprint, elytra, minecart, boat, horse) in meters.
+- **Summary** (`mc_stats_summary`) — lifetime totals per player: blocks mined, mobs killed, playtime hours, deaths, jumps, damage dealt/taken, plus more technical counters (mob/player kills, items dropped, damage absorbed/blocked/resisted, times left game), tick counters as hours (total world time, sneak time, time since death/rest), and movement distance by type (walk, sprint, crouch, swim, fall, climb, on/under water, creative fly, elytra, minecart, boat, horse) in meters.
 - **Breakdowns** (`mc_stats_block`, `mc_stats_mob`) — per-block-mined and per-mob-killed counts.
-- **Interactions** (`mc_stats_station`, `mc_stats_automation`, `mc_stats_other`) — crafting-station usage, redstone/automation, and enchanting/trading/breeding/fishing.
+- **Interactions** (`mc_stats_station`, `mc_stats_automation`, `mc_stats_container`, `mc_stats_other`) — crafting/utility-station usage (furnace, anvil, grindstone, brewing stand, cartography table, lectern, beacon, campfire, …), redstone/automation, container opens (barrel, ender chest, shulker box), and enchanting/trading/breeding/fishing/bells/raids.
 - **Recent rates** (`mc_stats_derived`) — blocks mined and items picked up per hour, computed from the delta between scrapes rather than a lifetime average.
+- **Server health** (`mc_server_health`) — per-scrape server telemetry parsed from the log: overload events, worst lag (ms behind), ticks skipped, server (re)starts, and last startup duration. No mods needed — it reads vanilla's own "Can't keep up" warnings.
 - **Sessions** (`mc_session`, `mc_session_stats`) — each completed play session plus a running summary: server age, current daily streak, longest session, and total sessions.
 
 ## How it works
 
 Every `EXPORTER_SCRAPE_INTERVAL_SECONDS` (default 60s), the exporter runs one cycle:
 
-1. **Read new log lines** — seeks past the last-read offset in `logs/latest.log` (handling rotation/truncation) and matches `joined the game` / `left the game`. Vanilla logs carry only a time-of-day, so events are timestamped with the wall-clock time they were observed, accurate within one interval.
+1. **Read new log lines** — seeks past the last-read offset in `logs/latest.log` (handling rotation/truncation). The same batch is matched for `joined the game` / `left the game` and scanned for server-health signals (overload warnings, `Starting minecraft server`, `Done (Xs)!`). Vanilla logs carry only a time-of-day, so events are timestamped with the wall-clock time they were observed, accurate within one interval.
 2. **Close sessions** — pairs each leave with its open join into a completed session and refreshes the session summary. An in-progress session still counts toward today's streak.
-3. **Parse stats** — reads each `world/stats/<uuid>.json`, resolves the UUID to a name via `usercache.json`, and emits the summary plus the per-block, per-mob, station, automation and economy breakdowns.
+3. **Parse stats** — reads each `world/stats/<uuid>.json`, resolves the UUID to a name via `usercache.json`, and emits the summary plus the per-block, per-mob, station, automation, container and economy breakdowns.
 4. **Compute rates** — after a second scrape, divides the block/item delta by the playtime delta for per-hour rates that reflect recent activity.
 5. **Write to InfluxDB** — POSTs all points to the HTTP v2 write API, retrying transient errors with backoff and failing fast on `4xx`; a failed write is logged and the loop continues instead of crashing.
 6. **Persist state** — writes the log offset, open sessions, session history and per-player snapshots to `exporter-state/exporter_state.json` (atomic replace) so everything survives restarts.

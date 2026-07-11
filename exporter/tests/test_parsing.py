@@ -12,7 +12,9 @@ from parsing import (
     build_line,
     compute_session_stats,
     parse_log_lines,
+    parse_server_health,
     parse_stats,
+    server_health_to_line,
     session_stats_to_line,
     session_to_line,
 )
@@ -86,6 +88,29 @@ class ParseStatsTests(unittest.TestCase):
         lines, _ = parse_stats({"stats": {}}, "Steve", None, 1_000_000_000)
         summary = next(l for l in lines if l.startswith("mc_stats_summary"))
         self.assertIn("blocks_mined_total=0i", summary)
+
+    def test_technical_counter_and_time_fields_in_summary(self):
+        stats_json = json.loads(json.dumps(self.stats_json))
+        stats_json["stats"]["minecraft:custom"].update({
+            "minecraft:mob_kills": 42,
+            "minecraft:total_world_time": 20 * 3600,  # 1 hour of ticks
+            "minecraft:open_barrel": 5,
+        })
+        lines, _ = parse_stats(stats_json, "Steve", None, 1_000_000_000)
+        summary = next(l for l in lines if l.startswith("mc_stats_summary"))
+        self.assertIn("mob_kills=42i", summary)
+        self.assertIn("total_world_time_hours=1.0", summary)
+        self.assertTrue(
+            any("mc_stats_container,player=Steve,container=barrel count=5i" in l for l in lines)
+        )
+
+    def test_missing_technical_stats_default_to_zero(self):
+        lines, _ = parse_stats({"stats": {}}, "Steve", None, 1_000_000_000)
+        summary = next(l for l in lines if l.startswith("mc_stats_summary"))
+        self.assertIn("mob_kills=0i", summary)
+        self.assertIn("total_world_time_hours=0.0", summary)
+        # A container stat with a zero count emits no breakdown line.
+        self.assertFalse(any(l.startswith("mc_stats_container") for l in lines))
 
 
 class ParseLogLinesTests(unittest.TestCase):
@@ -167,6 +192,39 @@ class SessionLineTests(unittest.TestCase):
         )
         self.assertTrue(stats_line.startswith("mc_session_stats "))
         self.assertIn("current_streak_days=2i", stats_line)
+
+
+class ParseServerHealthTests(unittest.TestCase):
+    def test_overload_events_are_counted_and_worst_lag_tracked(self):
+        lines = [
+            "[10:00:01] [Server thread/WARN]: Can't keep up! Is the server overloaded? "
+            "Running 2050ms behind, skipping 41 tick(s)",
+            "[10:00:05] [Server thread/WARN]: Can't keep up! Is the server overloaded? "
+            "Running 900ms behind, skipping 18 tick(s)",
+        ]
+        health = parse_server_health(lines)
+        self.assertEqual(health["overload_events"], 2)
+        self.assertEqual(health["max_ms_behind"], 2050)
+        self.assertEqual(health["ticks_skipped"], 41 + 18)
+
+    def test_startup_and_restart_are_detected(self):
+        lines = load_fixture_lines("sample_latest.log")
+        health = parse_server_health(lines)
+        self.assertEqual(health["server_starts"], 1)
+        self.assertEqual(health["startup_seconds"], 12.345)
+
+    def test_healthy_batch_reports_zeros_and_no_startup(self):
+        health = parse_server_health(["[10:00:00] [Server thread/INFO]: Steve joined the game"])
+        self.assertEqual(health["overload_events"], 0)
+        self.assertEqual(health["max_ms_behind"], 0)
+        self.assertIsNone(health["startup_seconds"])
+
+    def test_server_health_line_omits_startup_when_absent(self):
+        health = parse_server_health([])
+        line = server_health_to_line(health, 1_000_000_000)
+        self.assertTrue(line.startswith("mc_server_health "))
+        self.assertIn("overload_events=0i", line)
+        self.assertNotIn("startup_seconds", line)
 
 
 if __name__ == "__main__":

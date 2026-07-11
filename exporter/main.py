@@ -14,7 +14,9 @@ from influx import write_lines
 from parsing import (
     compute_session_stats,
     parse_log_lines,
+    parse_server_health,
     parse_stats,
+    server_health_to_line,
     session_stats_to_line,
     session_to_line,
 )
@@ -76,11 +78,10 @@ def read_new_log_lines(state):
     return new_lines
 
 
-def process_sessions(state):
+def process_sessions(state, new_lines):
     now = datetime.now(timezone.utc)
     timestamp_ns = int(now.timestamp() * 1e9)
 
-    new_lines = read_new_log_lines(state)
     open_sessions = {
         player: datetime.fromisoformat(ts) for player, ts in state.get("open_sessions", {}).items()
     }
@@ -137,13 +138,30 @@ def process_stats(state):
     return influx_lines
 
 
+def process_server_health(new_lines):
+    timestamp_ns = int(time.time() * 1e9)
+    health = parse_server_health(new_lines)
+    return [server_health_to_line(health, timestamp_ns)]
+
+
 def run_cycle(state):
     influx_lines = []
 
     try:
-        influx_lines.extend(process_sessions(state))
+        new_lines = read_new_log_lines(state)
+    except Exception as exc:
+        print(f"[exporter] reading log lines failed: {exc}")
+        new_lines = []
+
+    try:
+        influx_lines.extend(process_sessions(state, new_lines))
     except Exception as exc:
         print(f"[exporter] session processing failed: {exc}")
+
+    try:
+        influx_lines.extend(process_server_health(new_lines))
+    except Exception as exc:
+        print(f"[exporter] server health processing failed: {exc}")
 
     try:
         influx_lines.extend(process_stats(state))

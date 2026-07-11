@@ -14,6 +14,13 @@ STATION_STATS = [
     "interact_with_smithing_table",
     "interact_with_stonecutter",
     "interact_with_loom",
+    "interact_with_anvil",
+    "interact_with_grindstone",
+    "interact_with_brewingstand",
+    "interact_with_cartography_table",
+    "interact_with_lectern",
+    "interact_with_beacon",
+    "interact_with_campfire",
 ]
 
 AUTOMATION_STATS = [
@@ -24,26 +31,69 @@ AUTOMATION_STATS = [
     "target_hit",
 ]
 
+# Container opens live under minecraft:custom with no shared prefix, so they get their own group.
+CONTAINER_STATS = [
+    "open_barrel",
+    "open_enderchest",
+    "open_shulker_box",
+]
+
 OTHER_STATS = [
     "enchant_item",
     "traded_with_villager",
+    "talked_to_villager",
     "animals_bred",
     "fish_caught",
     "sleep_in_bed",
+    "bell_ring",
+    "raid_trigger",
+    "raid_win",
 ]
 
 # Vanilla stores distances in centimeters; map to the summary field name we export (in meters).
 DISTANCE_FIELDS = {
     "distance_walk_m": "walk_one_cm",
     "distance_sprint_m": "sprint_one_cm",
+    "distance_crouch_m": "crouch_one_cm",
+    "distance_swim_m": "swim_one_cm",
+    "distance_fall_m": "fall_one_cm",
+    "distance_climb_m": "climb_one_cm",
+    "distance_walk_on_water_m": "walk_on_water_one_cm",
+    "distance_walk_under_water_m": "walk_under_water_one_cm",
+    "distance_fly_m": "fly_one_cm",
     "distance_elytra_m": "aviate_one_cm",
     "distance_minecart_m": "minecart_one_cm",
     "distance_boat_m": "boat_one_cm",
     "distance_horse_m": "horse_one_cm",
 }
 
+# Cumulative custom counters exported verbatim as integers.
+COUNTER_FIELDS = {
+    "mob_kills": "mob_kills",
+    "player_kills": "player_kills",
+    "items_dropped": "drop",
+    "leave_game": "leave_game",
+    "damage_absorbed": "damage_absorbed",
+    "damage_blocked_by_shield": "damage_blocked_by_shield",
+    "damage_resisted": "damage_resisted",
+    "damage_dealt_absorbed": "damage_dealt_absorbed",
+}
+
+# Custom tick counters exported as hours.
+TIME_FIELDS = {
+    "total_world_time_hours": "total_world_time",
+    "sneak_time_hours": "sneak_time",
+    "time_since_death_hours": "time_since_death",
+    "time_since_rest_hours": "time_since_rest",
+}
+
 JOIN_RE = re.compile(r"\]: (\S+) joined the game")
 LEAVE_RE = re.compile(r"\]: (\S+) left the game")
+
+# Server-health signals in latest.log. The overload warning is vanilla's built-in lag indicator.
+OVERLOAD_RE = re.compile(r"Running (\d+)ms behind, skipping (\d+) tick")
+SERVER_START_RE = re.compile(r"Starting minecraft server version (\S+)")
+STARTUP_DONE_RE = re.compile(r"Done \(([\d.]+)s\)!")
 
 
 def strip_namespace(key):
@@ -95,6 +145,10 @@ def parse_stats(stats_json, player, previous, timestamp_ns):
         "damage_dealt": custom.get("minecraft:damage_dealt", 0),
         "damage_taken": custom.get("minecraft:damage_taken", 0),
     }
+    for field_name, stat_key in COUNTER_FIELDS.items():
+        summary_fields[field_name] = custom.get(f"minecraft:{stat_key}", 0)
+    for field_name, stat_key in TIME_FIELDS.items():
+        summary_fields[field_name] = round(custom.get(f"minecraft:{stat_key}", 0) / 20 / 3600, 4)
     for field_name, stat_key in DISTANCE_FIELDS.items():
         summary_fields[field_name] = round(custom.get(f"minecraft:{stat_key}", 0) / 100, 2)
 
@@ -119,6 +173,12 @@ def parse_stats(stats_json, player, previous, timestamp_ns):
         if count:
             action_tags = dict(tags, action=stat_name)
             lines.append(build_line("mc_stats_automation", action_tags, {"count": count}, timestamp_ns))
+
+    for stat_name in CONTAINER_STATS:
+        count = custom.get(f"minecraft:{stat_name}", 0)
+        if count:
+            container_tags = dict(tags, container=stat_name.replace("open_", ""))
+            lines.append(build_line("mc_stats_container", container_tags, {"count": count}, timestamp_ns))
 
     for stat_name in OTHER_STATS:
         count = custom.get(f"minecraft:{stat_name}", 0)
@@ -224,3 +284,54 @@ def compute_session_stats(all_sessions, first_seen, now, extra_played_dates=None
 
 def session_stats_to_line(stats, timestamp_ns):
     return build_line("mc_session_stats", {}, dict(stats), timestamp_ns)
+
+
+def parse_server_health(lines):
+    """Summarize server-health signals in a batch of raw log lines.
+
+    Vanilla's own "Can't keep up! ... Running Nms behind, skipping M tick(s)" warning is the
+    only lag indicator available without a mod, so we count those events and track the worst
+    lag / total ticks skipped in this batch. Server (re)starts and the last startup duration
+    come from the "Starting minecraft server" / "Done (Xs)!" lines.
+
+    Emitted every cycle (zeros when healthy) so Grafana gets a continuous lag timeseries.
+    """
+    overload_events = 0
+    max_ms_behind = 0
+    ticks_skipped = 0
+    server_starts = 0
+    startup_seconds = None
+
+    for line in lines:
+        overload = OVERLOAD_RE.search(line)
+        if overload:
+            overload_events += 1
+            max_ms_behind = max(max_ms_behind, int(overload.group(1)))
+            ticks_skipped += int(overload.group(2))
+            continue
+        if SERVER_START_RE.search(line):
+            server_starts += 1
+            continue
+        done = STARTUP_DONE_RE.search(line)
+        if done:
+            startup_seconds = float(done.group(1))
+
+    return {
+        "overload_events": overload_events,
+        "max_ms_behind": max_ms_behind,
+        "ticks_skipped": ticks_skipped,
+        "server_starts": server_starts,
+        "startup_seconds": startup_seconds,  # None unless a "Done" line appeared this batch
+    }
+
+
+def server_health_to_line(health, timestamp_ns):
+    fields = {
+        "overload_events": health["overload_events"],
+        "max_ms_behind": health["max_ms_behind"],
+        "ticks_skipped": health["ticks_skipped"],
+        "server_starts": health["server_starts"],
+    }
+    if health["startup_seconds"] is not None:
+        fields["startup_seconds"] = health["startup_seconds"]
+    return build_line("mc_server_health", {}, fields, timestamp_ns)

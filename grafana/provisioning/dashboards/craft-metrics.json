@@ -1456,6 +1456,371 @@
           }
         }
       ]
+    },
+    {
+      "id": 29,
+      "type": "row",
+      "title": "Server health",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 30,
+      "type": "stat",
+      "title": "Overload events (24h)",
+      "description": "Times the server fell behind and skipped ticks in the last 24h, from vanilla's \"Can't keep up\" warning.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"overload_events\") |> sum()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "type": "stat",
+      "title": "Worst lag (24h)",
+      "description": "Largest amount the server was running behind in the last 24h.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"max_ms_behind\") |> max()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "type": "stat",
+      "title": "Startup time",
+      "description": "How long the server took to finish loading on its last start.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -30d) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"startup_seconds\") |> last()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "type": "stat",
+      "title": "Restarts (7d)",
+      "description": "Number of times the server (re)started in the last 7 days.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"server_starts\") |> sum()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "type": "timeseries",
+      "title": "Server lag",
+      "description": "Milliseconds the server was running behind per scrape (0 when keeping up).",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 50
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 5,
+            "lineInterpolation": "linear",
+            "spanNulls": true
+          },
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*max_ms_behind.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Behind by"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -30d) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"max_ms_behind\")",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "type": "timeseries",
+      "title": "Ticks skipped",
+      "description": "Server ticks skipped per scrape while catching up after an overload.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 50
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 5,
+            "lineInterpolation": "linear",
+            "spanNulls": true
+          },
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#199e70"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*ticks_skipped.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ticks skipped"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -30d) |> filter(fn: (r) => r._measurement == \"mc_server_health\" and r._field == \"ticks_skipped\")",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
     }
   ],
   "description": "Gameplay stats for a single-player Minecraft server, collected by the craft-metrics exporter."
