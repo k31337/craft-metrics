@@ -671,7 +671,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -30d) |> filter(fn: (r) => r._measurement == \"mc_stats_summary\" and (r._field == \"distance_walk_m\" or r._field == \"distance_sprint_m\" or r._field == \"distance_fly_m\" or r._field == \"distance_minecart_m\" or r._field == \"distance_boat_m\" or r._field == \"distance_horse_m\")) |> group(columns: [\"_field\"]) |> last()",
+          "query": "from(bucket: \"minecraft\") |> range(start: -30d) |> filter(fn: (r) => r._measurement == \"mc_stats_summary\" and (r._field == \"distance_walk_m\" or r._field == \"distance_sprint_m\" or r._field == \"distance_elytra_m\" or r._field == \"distance_minecart_m\" or r._field == \"distance_boat_m\" or r._field == \"distance_horse_m\")) |> group(columns: [\"_field\"]) |> last()",
           "refId": "A",
           "datasource": {
             "type": "influxdb",

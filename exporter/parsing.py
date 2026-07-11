@@ -36,7 +36,7 @@ OTHER_STATS = [
 DISTANCE_FIELDS = {
     "distance_walk_m": "walk_one_cm",
     "distance_sprint_m": "sprint_one_cm",
-    "distance_fly_m": "aviate_one_cm",
+    "distance_elytra_m": "aviate_one_cm",
     "distance_minecart_m": "minecart_one_cm",
     "distance_boat_m": "boat_one_cm",
     "distance_horse_m": "horse_one_cm",
