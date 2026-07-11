@@ -1,0 +1,6 @@
+[09:00:12] [Server thread/INFO]: Starting minecraft server version 1.21.1
+[09:00:45] [Server thread/INFO]: Done (12.345s)! For help, type "help"
+[09:15:03] [Server thread/INFO]: Steve[/127.0.0.1:54321] logged in with entity id 123 at (0.5, 64.0, 0.5)
+[09:15:03] [Server thread/INFO]: Steve joined the game
+[10:42:51] [Server thread/INFO]: Steve lost connection: Disconnected
+[10:42:51] [Server thread/INFO]: Steve left the game

@@ -1,0 +1,39 @@
+{
+  "stats": {
+    "minecraft:mined": {
+      "minecraft:stone": 245,
+      "minecraft:oak_log": 64,
+      "minecraft:iron_ore": 12
+    },
+    "minecraft:killed": {
+      "minecraft:zombie": 18,
+      "minecraft:skeleton": 9
+    },
+    "minecraft:custom": {
+      "minecraft:play_time": 144000,
+      "minecraft:walk_one_cm": 1250000,
+      "minecraft:sprint_one_cm": 300000,
+      "minecraft:aviate_one_cm": 50000,
+      "minecraft:minecart_one_cm": 0,
+      "minecraft:boat_one_cm": 0,
+      "minecraft:horse_one_cm": 0,
+      "minecraft:deaths": 3,
+      "minecraft:jump": 512,
+      "minecraft:damage_dealt": 890,
+      "minecraft:damage_taken": 340,
+      "minecraft:interact_with_furnace": 22,
+      "minecraft:interact_with_crafting_table": 15,
+      "minecraft:inspect_hopper": 6,
+      "minecraft:enchant_item": 2,
+      "minecraft:traded_with_villager": 4,
+      "minecraft:animals_bred": 1,
+      "minecraft:fish_caught": 3,
+      "minecraft:sleep_in_bed": 7
+    },
+    "minecraft:picked_up": {
+      "minecraft:cobblestone": 200,
+      "minecraft:iron_ingot": 12
+    }
+  },
+  "DataVersion": 3700
+}
