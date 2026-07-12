@@ -5,7 +5,7 @@
 ![Grafana](https://img.shields.io/badge/grafana-%2B_influxdb-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-A self-hosted Docker Compose stack that runs a single-player Minecraft Fabric server and turns its gameplay into a live, always-updated Grafana dashboard. A small Python exporter polls the server's vanilla `stats.json` and log files every minute — no mods, no plugins — and streams the numbers into InfluxDB: mining, combat, movement, automation, villager trading, and a timeline of every play session. Bring the stack up with one command and open Grafana; the dashboard is already there.
+A self-hosted Docker Compose stack that runs a single-player Minecraft Fabric server and turns its gameplay into a live, always-updated Grafana dashboard. A small Python exporter polls the server's vanilla `stats.json` and log files every minute — no mods, no plugins — and streams the numbers into InfluxDB: mining, combat, movement, automation, villager trading, container use, server-health telemetry (lag, ticks skipped, restarts), and a timeline of every play session. Bring the stack up with one command and open Grafana; the dashboard is already there.
 
 ## Contents
 
