@@ -1458,6 +1458,305 @@
       ]
     },
     {
+      "id": 36,
+      "type": "row",
+      "title": "Player detail",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 37,
+      "type": "bargauge",
+      "title": "Distance by terrain",
+      "description": "Movement distance for the more technical travel types, in meters.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthm",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_crouch_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Crouch"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_swim_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Swim"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_fall_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fall"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_climb_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Climb"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_walk_on_water_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "On water"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_walk_under_water_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Under water"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*distance_fly_m.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Creative fly"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_summary\" and (r._field == \"distance_crouch_m\" or r._field == \"distance_swim_m\" or r._field == \"distance_fall_m\" or r._field == \"distance_climb_m\" or r._field == \"distance_walk_on_water_m\" or r._field == \"distance_walk_under_water_m\" or r._field == \"distance_fly_m\")) |> group(columns: [\"_field\"]) |> last()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "type": "bargauge",
+      "title": "Damage mitigation",
+      "description": "Lifetime damage the player absorbed, blocked with a shield, resisted, or absorbed while dealing it.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*damage_absorbed.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Absorbed"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*damage_blocked_by_shield.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Blocked by shield"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*damage_resisted.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Resisted"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*damage_dealt_absorbed.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Dealt but absorbed"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_summary\" and (r._field == \"damage_absorbed\" or r._field == \"damage_blocked_by_shield\" or r._field == \"damage_resisted\" or r._field == \"damage_dealt_absorbed\")) |> group(columns: [\"_field\"]) |> last()",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "type": "bargauge",
+      "title": "Containers opened",
+      "description": "Times the player opened each type of storage container.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 46
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_container\" and r._field == \"count\") |> group(columns: [\"container\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true)",
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
       "id": 29,
       "type": "row",
       "title": "Server health",
@@ -1465,7 +1764,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 54
       },
       "collapsed": false,
       "panels": []
@@ -1484,7 +1783,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 46
+        "y": 55
       },
       "fieldConfig": {
         "defaults": {
@@ -1536,7 +1835,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 46
+        "y": 55
       },
       "fieldConfig": {
         "defaults": {
@@ -1588,7 +1887,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 46
+        "y": 55
       },
       "fieldConfig": {
         "defaults": {
@@ -1640,7 +1939,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 46
+        "y": 55
       },
       "fieldConfig": {
         "defaults": {
@@ -1692,7 +1991,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 50
+        "y": 59
       },
       "fieldConfig": {
         "defaults": {
@@ -1764,7 +2063,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 50
+        "y": 59
       },
       "fieldConfig": {
         "defaults": {
