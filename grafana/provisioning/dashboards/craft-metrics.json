@@ -748,7 +748,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_block\" and r._field == \"count\") |> group(columns: [\"block\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10)",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_block\" and r._field == \"count\") |> group(columns: [\"block\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> group(columns: [\"block\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
@@ -799,7 +799,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_mob\" and r._field == \"count\") |> group(columns: [\"mob\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10)",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_mob\" and r._field == \"count\") |> group(columns: [\"mob\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> group(columns: [\"mob\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
@@ -1747,7 +1747,7 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_container\" and r._field == \"count\") |> group(columns: [\"container\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true)",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_container\" and r._field == \"count\") |> group(columns: [\"container\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> group(columns: [\"container\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
