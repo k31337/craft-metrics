@@ -748,11 +748,22 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_block\" and r._field == \"count\") |> group(columns: [\"block\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> group(columns: [\"block\"])",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_block\" and r._field == \"count\") |> group(columns: [\"block\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> keep(columns: [\"block\", \"_value\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
+          }
+        }
+      ],
+      "transformations": [
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              { "fieldName": "block", "handlerKey": "field.name" },
+              { "fieldName": "_value", "handlerKey": "field.value" }
+            ]
           }
         }
       ]
@@ -799,11 +810,22 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_mob\" and r._field == \"count\") |> group(columns: [\"mob\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> group(columns: [\"mob\"])",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_mob\" and r._field == \"count\") |> group(columns: [\"mob\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10) |> keep(columns: [\"mob\", \"_value\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
+          }
+        }
+      ],
+      "transformations": [
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              { "fieldName": "mob", "handlerKey": "field.name" },
+              { "fieldName": "_value", "handlerKey": "field.value" }
+            ]
           }
         }
       ]
@@ -1747,11 +1769,22 @@
       },
       "targets": [
         {
-          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_container\" and r._field == \"count\") |> group(columns: [\"container\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> group(columns: [\"container\"])",
+          "query": "from(bucket: \"minecraft\") |> range(start: -1y) |> filter(fn: (r) => r._measurement == \"mc_stats_container\" and r._field == \"count\") |> group(columns: [\"container\"]) |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> keep(columns: [\"container\", \"_value\"])",
           "refId": "A",
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
+          }
+        }
+      ],
+      "transformations": [
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              { "fieldName": "container", "handlerKey": "field.name" },
+              { "fieldName": "_value", "handlerKey": "field.value" }
+            ]
           }
         }
       ]
