@@ -16,6 +16,7 @@ A self-hosted Docker Compose stack that runs a single-player Minecraft Fabric se
 - [Running as a service](#running-as-a-service)
 - [Everyday commands](#everyday-commands)
 - [What gets tracked](#what-gets-tracked)
+- [The dashboard](#the-dashboard)
 - [How it works](#how-it-works)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
@@ -202,6 +203,20 @@ The exporter writes InfluxDB line protocol to the configured bucket, tagged so G
 - **Recent rates** (`mc_stats_derived`) — blocks mined and items picked up per hour, computed from the delta between scrapes rather than a lifetime average.
 - **Server health** (`mc_server_health`) — per-scrape server telemetry parsed from the log: overload events, worst lag (ms behind), ticks skipped, server (re)starts, and last startup duration. No mods needed — it reads vanilla's own "Can't keep up" warnings.
 - **Sessions** (`mc_session`, `mc_session_stats`) — each completed play session plus a running summary: server age, current daily streak, longest session, and total sessions.
+
+## The dashboard
+
+The provisioned "Craft Metrics" dashboard groups the panels into rows, top to bottom:
+
+- **Sessions** — server age, current streak, longest session and total sessions, a calendar heatmap of sessions per day, and a table of recent sessions.
+- **Progress** — playtime over time, lifetime blocks mined / mobs killed / deaths, and recent activity rates.
+- **Mining & combat** — top blocks mined, mobs killed by type, and damage dealt vs taken.
+- **Movement & automation** — distance by movement type, crafting-station usage and automation interactions.
+- **Milestones** — jumps, villager trades, animals bred, fish caught, items enchanted and nights slept.
+- **Player detail** — distance by terrain (crouch, swim, fall, climb, on/under water, creative fly), damage mitigation (absorbed / blocked / resisted), and containers opened.
+- **Server health** — overload events, worst lag, last startup time and restarts, plus server-lag and ticks-skipped timelines.
+
+The time-series panels follow Grafana's time picker (top right), so widen it (e.g. *Last 30 days*) to see history; the heatmap, tables and stat tiles are range-independent.
 
 ## How it works
 
