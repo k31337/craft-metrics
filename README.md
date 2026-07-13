@@ -1,9 +1,13 @@
-# craft-metrics
+<p align="center">
+  <img src="assets/craft-metrics-logo.svg" alt="craft-metrics — Minecraft gameplay, live in Grafana" width="640">
+</p>
 
-![Minecraft](https://img.shields.io/badge/minecraft-1.21.1_fabric-brightgreen)
-![Docker](https://img.shields.io/badge/docker-compose-blue)
-![Grafana](https://img.shields.io/badge/grafana-%2B_influxdb-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+<p align="center">
+  <img src="https://img.shields.io/badge/minecraft-1.21.1_fabric-brightgreen" alt="Minecraft 1.21.1 Fabric">
+  <img src="https://img.shields.io/badge/docker-compose-blue" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/grafana-%2B_influxdb-orange" alt="Grafana + InfluxDB">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
+</p>
 
 A self-hosted Docker Compose stack that runs a single-player Minecraft Fabric server and turns its gameplay into a live, always-updated Grafana dashboard. A small Python exporter polls the server's vanilla `stats.json` and log files every minute — no mods, no plugins — and streams the numbers into InfluxDB: mining, combat, movement, automation, villager trading, container use, server-health telemetry (lag, ticks skipped, restarts), and a timeline of every play session. Bring the stack up with one command and open Grafana; the dashboard is already there.
 
